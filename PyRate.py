@@ -1124,6 +1124,52 @@ def comb_log_files(path_to_files,burnin=0,tag="",resample=0,col_tag=[]):
         f.write(tbl_header)
         np.savetxt(f, comb, delimiter="\t",fmt=fmt_list,newline="\n") #)
 
+def comb_bds_extended(path_to_files,
+                      burnin=0,
+                      tag="", # tag = "mcmc" or "marginal rates
+                      resample=0,
+                      col_tag=[]):
+    # extract the names of all the files matching the pattern imposed by `tag`
+    direct="%s/*%s*.log" % (path_to_files,tag)
+    files=glob.glob(direct)
+    files=np.sort(files)
+    file_temp = [f for f in files if tag in os.path.basename(f)]
+    # headers of these files and their respective shapes
+    heads = list(np.array(next(open(f)).split()) for f in file_temp)
+    shapes = list(np.shape(h)[0] for h in heads)
+    # if some runs inferred one more rate shift than others
+    if len(np.unique(shapes)) == 2:
+        h = 0
+        #positions of the runs with a lower number of rate shifts
+        lower = np.where(shapes == np.unique(shapes)[0])[0] #np.unique() returns an ordered tuple (increasing)
+        #position of the runs with a higher number of rate shifts
+        higher = np.where(shapes == np.unique(shapes)[1])[0]
+        #name of the colmuns missing in some runs ( "mu_i" and "lambda_i" in mcmc.logs) => reversed to facilitate insertion in the table
+        missing = [i for i in heads[higher[0]] if i not in heads[lower[0]]][::-1]
+        #name of the columns after which we'll add the missing ones ("mu_(i-1)" and "lambda_(i-1)" in mcmc.logs)
+        missing_prev = [el.split("_")[0] + "_" + str(int(el.split("_")[1])-1) for el in missing]
+        for i in range(len(file_temp)):
+            tmp_df = pd.read_csv(file_temp[i], sep="\t")
+            # remove burn-in
+            tmp_df = tmp_df[:][burnin:]
+            # remove undesired columns (not specified in col_tag)
+            if len(col_tag) > 0:
+                tmp_df = tmp_df.drop(col_tag, axis = 1)
+            if i in lower: # if we have to add "missing" rates
+                for j in range(len(missing)):
+                    idx = tmp_df.columns.get_loc(missing_prev[j])
+                    tmp_df.insert(idx+1, missing[j], tmp_df[missing_prev[j]])
+            if h == 0:
+                comb = tmp_df
+            else:
+                comb = pd.concat([comb, tmp_df], axis = 0)
+            h += 1
+        outfile = "%s/combined_%s%s_%s.log" % (path_to_files,len(file_temp),tag,tag)
+        comb.to_csv(outfile, index=False, sep="\t")
+    else:
+        comb_log_files(path_to_files, burnin, tag, resample, col_tag)
+
+
 ########################## INITIALIZE MCMC ##############################
 def get_gamma_rates(a):
     b=a
@@ -5120,7 +5166,7 @@ if __name__ == '__main__':
         #    sys.exit("\n2 '*marginal_likelihood.txt' files required.\n")
         quit()
     elif args.combLog != "": # COMBINE LOG FILES
-        comb_log_files(args.combLog,burnin,args.tag,resample=args.resample,col_tag=args.col_tag)
+        comb_bds_extended(args.combLog,burnin,args.tag,resample=args.resample,col_tag=args.col_tag)
         sys.exit("\n")
     elif args.combLogRJ != "": # COMBINE LOG FILES
         comb_log_files_smart(args.combLogRJ,burnin,args.tag,resample=args.resample,col_tag=args.col_tag)
@@ -5130,9 +5176,9 @@ if __name__ == '__main__':
         tag = args.tag
         combine_pkl(args.combBDNN, tag)
         tag_mcmc_log = tag + "*_mcmc"
-        comb_log_files(args.combBDNN, burnin, tag_mcmc_log, resample=args.resample, col_tag=args.col_tag)
+        comb_bds_extended(args.combBDNN, burnin, tag_mcmc_log, resample=args.resample, col_tag=args.col_tag)
         tag_rates_log = tag + "*_per_species_rates"
-        comb_log_files(args.combBDNN, burnin, tag_rates_log, resample=args.resample)
+        comb_bds_extended(args.combBDNN, burnin, tag_rates_log, resample=args.resample)
         sys.exit("\n")
     elif len(args.input_data)==0 and args.d == "": sys.exit("\nInput file required. Use '-h' for command list.\n")
 
