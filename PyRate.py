@@ -995,7 +995,7 @@ def comb_log_files(path_to_files,burnin=0,tag="",resample=0,col_tag=[]):
     sys.path.append(infile)
     direct="%s/*%s*.log" % (infile,tag)
     files=glob.glob(direct)
-    files=sort(files)
+    files=np.sort(files)
     print("found", len(files), "log files...\n")
     if len(files)==0: quit()
     j=0
@@ -1007,8 +1007,8 @@ def comb_log_files(path_to_files,burnin=0,tag="",resample=0,col_tag=[]):
         for f in files:
             f_temp = open(f,'r')
             x_temp = [line for line in f_temp.readlines()]
-            x_temp = x_temp[np.maximum(1,int(burnin)):]
-            x_temp =array(x_temp)
+            x_temp = x_temp[max(1,int(burnin)):]
+            x_temp = np.array(x_temp)
             try:
                 if resample>0:
                     r_ind= np.sort(np.random.randint(0,len(x_temp),resample))
@@ -1035,14 +1035,11 @@ def comb_log_files(path_to_files,burnin=0,tag="",resample=0,col_tag=[]):
 
 
     for f in files:
-        if platform.system() == "Windows" or platform.system() == "Microsoft":
-            f = f.replace("\\","/")
-
         try:
             file_name =  os.path.splitext(os.path.basename(f))[0]
             print(file_name, end=' ')
-            t_file=np.loadtxt(f, skiprows=np.maximum(1,int(burnin)))
-            shape_f=shape(t_file)
+            t_file=np.loadtxt(f, skiprows=max(1,int(burnin)))
+            shape_f=np.shape(t_file)
             print(shape_f)
             #t_file = t[burnin:shape_f[0],:]#).astype(str)
             # only sample from cold chain
@@ -1061,10 +1058,10 @@ def comb_log_files(path_to_files,burnin=0,tag="",resample=0,col_tag=[]):
                 temp_values = t_file[:,temp_index]
                 t_file = t_file[temp_values==1,:]
                 print("removed heated chains:",np.shape(t_file))
-            shape_f=shape(t_file)
+            shape_f=np.shape(t_file)
 
             if resample>0:
-                r_ind= sort(np.random.randint(0,shape_f[0],resample))
+                r_ind= np.sort(np.random.randint(0,shape_f[0],resample))
                 t_file = t_file[r_ind,:]
 
 
@@ -1125,10 +1122,7 @@ def comb_log_files(path_to_files,burnin=0,tag="",resample=0,col_tag=[]):
 
     with open(outfile, 'w') as f:
         f.write(tbl_header)
-        if platform.system() == "Windows" or platform.system() == "Microsoft":
-            np.savetxt(f, comb, delimiter="\t",fmt=fmt_list,newline="\r") #)
-        else:
-            np.savetxt(f, comb, delimiter="\t",fmt=fmt_list,newline="\n") #)
+        np.savetxt(f, comb, delimiter="\t",fmt=fmt_list,newline="\n") #)
 
 ########################## INITIALIZE MCMC ##############################
 def get_gamma_rates(a):
