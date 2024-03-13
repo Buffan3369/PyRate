@@ -1126,7 +1126,7 @@ def comb_log_files(path_to_files,burnin=0,tag="",resample=0,col_tag=[]):
 
 def comb_bds_extended(path_to_files,
                       burnin=0,
-                      tag="", # tag = "mcmc" or "marginal rates
+                      tag="", # tag = "mcmc" or "marginal rates"
                       resample=0,
                       col_tag=[]):
     # extract the names of all the files matching the pattern imposed by `tag`
@@ -1151,7 +1151,7 @@ def comb_bds_extended(path_to_files,
         for i in range(len(file_temp)):
             tmp_df = pd.read_csv(file_temp[i], sep="\t")
             # remove burn-in
-            tmp_df = tmp_df[:][burnin:]
+            tmp_df = tmp_df[:][int(burnin):]
             # remove undesired columns (not specified in col_tag)
             if len(col_tag) > 0:
                 tmp_df = tmp_df.drop(col_tag, axis = 1)
@@ -1164,7 +1164,7 @@ def comb_bds_extended(path_to_files,
             else:
                 comb = pd.concat([comb, tmp_df], axis = 0)
             h += 1
-        outfile = "%s/combined_%s%s_%s.log" % (path_to_files,len(file_temp),tag,tag)
+        outfile = "%s/combined_%s_%s.log" % (path_to_files, len(file_temp), tag)
         comb.to_csv(outfile, index=False, sep="\t")
     else:
         comb_log_files(path_to_files, burnin, tag, resample, col_tag)
