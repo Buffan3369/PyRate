@@ -619,7 +619,13 @@ def plot_ltt(tste_file,plot_type=1,rescale= 1,step_size=1.): # change rescale to
     # create out file
     wd = "%s" % os.path.dirname(tste_file)
     out_file_name = os.path.splitext(os.path.basename(tste_file))[0]
-    out_file="%s/%s" % (wd,out_file_name+"_ltt.txt")
+    if wd == '':
+        out_file = out_file_name+"_ltt.txt"
+        R_file_name = out_file_name+"_ltt.R"
+    else:
+        out_file = "%s/%s" % (wd,out_file_name+"_ltt.txt")
+        R_file_name="%s/%s" % (wd,out_file_name+"_ltt.R")
+    print(out_file)
     ltt_file = open(out_file , "w")
     ltt_log=csv.writer(ltt_file, delimiter='\t')
 
@@ -665,13 +671,18 @@ def plot_ltt(tste_file,plot_type=1,rescale= 1,step_size=1.): # change rescale to
         ltt_file.close()
 
     ###### R SCRIPT
-    R_file_name="%s/%s" % (wd,out_file_name+"_ltt.R")
     R_file=open(R_file_name, "w")
-    if platform.system() == "Windows" or platform.system() == "Microsoft":
-        tmp_wd = os.path.abspath(wd).replace('\\', '/')
-    else: tmp_wd = wd
-    R_script = """
-    setwd("%s")
+    #add current directory, otherwise R doesn't like
+    tmp_wd = os.getcwd() + "/" + wd
+    if wd == '':
+        R_script = """
+        
+        """
+    else:
+        R_script = """
+        setwd("%s")
+        """ % (tmp_wd)
+    R_script = R_script + """
     tbl = read.table(file = "%s_ltt.txt",header = T)
     pdf(file='%s_ltt.pdf',width=12, height=9)
     time = -tbl$time
@@ -680,18 +691,17 @@ def plot_ltt(tste_file,plot_type=1,rescale= 1,step_size=1.): # change rescale to
     %s
     lines(time,tbl$diversity, type="l",lwd = 2)
     n<-dev.off()
-    """ % (tmp_wd, out_file_name,out_file_name, yaxis, Ymin,Ymax,plot2)
+    """ % (out_file_name,out_file_name, yaxis, Ymin,Ymax,plot2)
 
     R_file.writelines(R_script)
     R_file.close()
     print("\nAn R script with the source for the stat plot was saved as: \n%s" % (R_file_name))
-    if platform.system() == "Windows" or platform.system() == "Microsoft":
-        cmd="cd %s & Rscript %s" % (wd,out_file_name+"_ltt.R")
+    if wd == '':
+        cmd="Rscript %s" % (out_file_name+"_ltt.R")
     else:
         cmd="cd %s; Rscript %s" % (wd,out_file_name+"_ltt.R")
     os.system(cmd)
     sys.exit("done\n")
-
 
 
 
