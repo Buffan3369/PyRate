@@ -223,7 +223,6 @@ for i in range(n_clades): # make trajectory curves for each clade
         var_val  = temp_tbl[:,1] # var value
         
         # REQUIRED ARGS:
-        all_Times = all_events_temp2[0]
         Var_values = var_val
         times_of_T_change_indexes = all_events_temp2[1] # all curves; times_of_T_change_indexes==0 curve change
         times_of_T_change = time_var
@@ -231,13 +230,13 @@ for i in range(n_clades): # make trajectory curves for each clade
         clade_indexes = all_events_temp2[2]
         curve_index = i
         # get curve values
-        Dtraj[:,i] = get_VarValue_at_timeMCDD(all_Times,Var_values,times_of_T_change_indexes,times_of_T_change,root_age,clade_indexes,curve_index )
-        v = get_VarValue_at_timeMCDD(all_Times,Var_values,times_of_T_change_indexes,times_of_T_change,root_age,clade_indexes,curve_index )
+        Dtraj[:,i] = get_VarValue_at_timeMCDD(all_time_eve,Var_values,times_of_T_change_indexes,times_of_T_change,root_age,clade_indexes,curve_index )
+        v = get_VarValue_at_timeMCDD(all_time_eve,Var_values,times_of_T_change_indexes,times_of_T_change,root_age,clade_indexes,curve_index )
         
         # CHECK
         #print "\n\n\n\n\n\n"
-        #for j in range(len(all_Times)):
-        #    print "%s\t%s" % (all_Times[j],v[j])#,dd[j])
+        #for j in range(len(all_time_eve)):
+        #    print "%s\t%s" % (all_time_eve[j],v[j])#,dd[j])
         #
         #print "\n\n\n\n\n\n"
         #sys.exit()
@@ -376,16 +375,16 @@ min_T = args.minT
 
 if max_T != -1 or min_T != -1: 
     if max_T == -1:
-        max_T = np.max(all_Times)
+        max_T = np.max(all_time_eve)
     if min_T == -1:
-        min_T = np.min(all_Times)
+        min_T = np.min(all_time_eve)
         
         
-    index_temp = np.arange(0,len(all_Times))
-    M_index_events_included = index_temp[all_Times <= max_T]
+    index_temp = np.arange(0,len(all_time_eve))
+    M_index_events_included = index_temp[all_time_eve <= max_T]
     
-    sp_times = all_Times[idx_s[fixed_focal_clade]]
-    ex_times = all_Times[idx_e[fixed_focal_clade]]
+    sp_times = all_time_eve[idx_s[fixed_focal_clade]]
+    ex_times = all_time_eve[idx_e[fixed_focal_clade]]
     
     M_index_temp = np.arange(0,len(sp_times))
     M_index_included_sp_times = M_index_temp[sp_times <= max_T]
@@ -393,8 +392,8 @@ if max_T != -1 or min_T != -1:
     M_index_temp = np.arange(0,len(ex_times))
     M_index_included_ex_times = M_index_temp[ex_times <= max_T]
 
-    index_temp = np.arange(0,len(all_Times))
-    m_index_events_included = index_temp[all_Times >=min_T]
+    index_temp = np.arange(0,len(all_time_eve))
+    m_index_events_included = index_temp[all_time_eve >=min_T]
        
     m_index_temp = np.arange(0,len(sp_times))
     m_index_included_sp_times = m_index_temp[sp_times >= min_T]
