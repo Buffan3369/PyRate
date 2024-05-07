@@ -162,9 +162,9 @@ def RTTplot_Q(f,q_shift_file,burnin=0,max_age=0):
     data  = "library(scales)\n" 
     if platform.system() == "Windows" or platform.system() == "Microsoft":
         wd_forward = os.path.abspath(wd).replace('\\', '/')
-        data+= "\n\npdf(file='%s/%s_RTT_Qrates.pdf',width=0.6*9, height=0.6*7)\n" % (wd,name_file) # 9
+        data+= "\n\npdf(file='%s_RTT_Qrates.pdf',width=0.6*9, height=0.6*7)\n" % (name_file) # 9
     else: 
-        data+= "\n\npdf(file='%s/%s_RTT_Qrates.pdf',width=0.6*9, height=0.6*7)\n" % (wd,name_file) # 9
+        data+= "\n\npdf(file='%s_RTT_Qrates.pdf',width=0.6*9, height=0.6*7)\n" % (name_file) # 9
     
     
     max_y_axis,max_x_axis,min_x_axis = np.max(t[:,q_ind]),-np.max(times_q_shift),-np.min(times_q_shift)
@@ -198,7 +198,7 @@ def RTTplot_Q(f,q_shift_file,burnin=0,max_age=0):
     if platform.system() == "Windows" or platform.system() == "Microsoft":
         cmd="cd %s & Rscript %s_RTT_Qrates.r" % (wd,name_file)
     else: 
-        cmd="cd %s; Rscript %s/%s_RTT_Qrates.r" % (wd,wd,name_file)
+        cmd="cd %s; Rscript %s_RTT_Qrates.r" % (wd,name_file)
     os.system(cmd)
     
     print("done\n")
